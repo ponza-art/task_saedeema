@@ -31,7 +31,7 @@ class SubMenuPage extends StatelessWidget {
     };
 
     // Define the API endpoint for the first button
-    String endpoint = 'https://example.com/endpoint_for_button_1';
+    String endpoint = 'https://t.alnefely.tk/api/lessons';
 
     // Define the token
     String token = '36|SpYAQz3Mm3YwL7f6Pn8MmMAisysvX9yulHqhV4C190f2022a';
@@ -52,7 +52,7 @@ class SubMenuPage extends StatelessWidget {
     };
 
     // Define the API endpoint for the second button
-    String endpoint = 'https://example.com/endpoint_for_button_2';
+    String endpoint = 'https://t.alnefely.tk/api/lessons';
 
     // Define the token
     String token = '36|SpYAQz3Mm3YwL7f6Pn8MmMAisysvX9yulHqhV4C190f2022a';
@@ -73,7 +73,7 @@ class SubMenuPage extends StatelessWidget {
     };
 
     // Define the API endpoint for the third button
-    String endpoint = 'https://example.com/endpoint_for_button_3';
+    String endpoint = 'https://t.alnefely.tk/api/lessons';
 
     // Define the token
     String token = '36|SpYAQz3Mm3YwL7f6Pn8MmMAisysvX9yulHqhV4C190f2022a';
@@ -81,32 +81,36 @@ class SubMenuPage extends StatelessWidget {
     // Call the postData function for the third button
     await postData(endpoint, requestData, token, context);
   }
+Future<void> postData(String endpoint, Map<String, dynamic> data, String token, BuildContext context) async {
+  try {
+    final http.Response response = await http.post(
+      Uri.parse(endpoint),
+      headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+      body: json.encode(data),
+    );
 
-  // Function to make POST requests
-  Future<void> postData(String endpoint, Map<String, dynamic> data, String token, BuildContext context) async {
-    try {
-      final http.Response response = await http.post(
-        Uri.parse(endpoint),
-        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
-        body: json.encode(data),
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseBody = json.decode(response.body);
-        String responseMessage = 'Request successful! Response body: $responseBody';
-        print(responseMessage);
-        showResponseSnackBar(context, responseMessage);
-      } else {
-        String errorMessage = 'Error: ${response.statusCode}, ${response.reasonPhrase}\nResponse body: ${response.body}';
-        print(errorMessage);
-        showResponseSnackBar(context, errorMessage);
-      }
-    } catch (error) {
-      String errorMessage = 'Error: $error';
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseBody = json.decode(response.body);
+      String responseMessage = 'Request successful! Response body: $responseBody';
+      print(responseMessage);
+      showResponseSnackBar(context, responseMessage);
+    } else if (response.statusCode == 401) {
+      // Handle unauthenticated response
+      final Map<String, dynamic> responseBody = json.decode(response.body);
+      String errorMessage = 'Unauthenticated: ${responseBody['message']}';
+      print(errorMessage);
+      showResponseSnackBar(context, errorMessage);
+    } else {
+      String errorMessage = 'Error: ${response.statusCode}, ${response.reasonPhrase}\nResponse body: ${response.body}';
       print(errorMessage);
       showResponseSnackBar(context, errorMessage);
     }
+  } catch (error) {
+    String errorMessage = 'Error: $error';
+    print(errorMessage);
+    showResponseSnackBar(context, errorMessage);
   }
+}
 
 
   @override
@@ -271,7 +275,11 @@ class SubMenuPage extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            postFirstButton(context);
+                            try {
+    postFirstButton(context);
+  } catch (e) {
+    print('Error in onPressed: $e');
+  }
                           },
                         ),
                       ),
